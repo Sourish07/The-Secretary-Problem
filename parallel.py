@@ -2,12 +2,11 @@ import numpy as np
 from main import simulate_secretary_problem, simulate_rejection, simulate_going_back
 from graph import graph
 from multiprocessing import Pool
+import os
 
 CANDIDATE_POOL_SIZE = 100
-NUM_OF_PROCESSES = 20
-NUM_SIMULATIONS = 10_000
-
-# PROBABLITY = 0.5
+NUM_OF_PROCESSES = os.cpu_count()
+NUM_SIMULATIONS = 1000
 
 def run_simulation(k):
     counter = 0

@@ -20,19 +20,14 @@ def simulate_rejection(n, k, p=0.5):
     k represents the number of candidates to skip before you start considering candidates
     p represents the probability of getting rejected by a candidate
     '''
-    ranking = np.arange(1, n + 1)
-    np.random.shuffle(ranking)
+    rankings = np.arange(1, n + 1)
+    np.random.shuffle(rankings)
 
-    best_seen = np.min(ranking[:k]) if k > 0 else float('inf')
+    best_seen = np.min(rankings[:k]) if k > 0 else float('inf')
+    rankings[k:] += np.where(np.random.rand(n - k) < p, n + 1, 0)
 
-    for leap in range(k, n):
-        if ranking[leap] < best_seen:
-            # if rejected, continue to next candidate
-            if np.random.random() < p:
-                continue
-            return ranking[leap]
-    return ranking[-1]
-
+    return rankings[np.argmax(rankings[k:] < best_seen) + k]
+        
 
 def simulate_going_back(n, k, p=0.5):
     '''
