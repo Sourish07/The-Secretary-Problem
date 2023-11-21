@@ -1,20 +1,17 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def simulate_secretary_problem_from_video(n, k):
+def simulate_secretary_problem(n, k):
     '''
     Simulate the secretary problem with a candidate pool of size n
     k represents the number of candidates to skip before you start considering candidates
     '''
-    ranking = np.arange(1, n + 1)
-    np.random.shuffle(ranking)
+    rankings = np.arange(1, n + 1)
+    np.random.shuffle(rankings)
 
-    best_seen = np.min(ranking[:k]) if k > 0 else float('inf')
+    best_seen = np.min(rankings[:k]) if k > 0 else float('inf')
 
-    for leap in range(k, n):
-        if ranking[leap] < best_seen:
-            return ranking[leap]
-    return ranking[-1]
+    return rankings[np.argmax(rankings[k:] < best_seen) + k]
 
 
 def simulate_rejection(n, k, p=0.5):
@@ -50,9 +47,9 @@ def simulate_going_back(n, k, p=0.5):
     best_seens = sorted(rankings[:k])
     best_seen = best_seens[0] if k > 0 else float('inf')
     
-    for leap in range(k, n):
-        if rankings[leap] < best_seen:
-            return rankings[leap]
+    leap = rankings[np.argmax(rankings[k:] < best_seen) + k]
+    if leap < best_seen:
+        return leap
         
     for go_back in range(k):
         # if rejcted, continue to next candidate

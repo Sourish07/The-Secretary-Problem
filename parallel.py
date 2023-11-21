@@ -4,15 +4,15 @@ from graph import graph
 from multiprocessing import Pool
 
 CANDIDATE_POOL_SIZE = 100
-NUM_OF_PROCESSES = 10
-NUM_SIMULATIONS = 100_000
+NUM_OF_PROCESSES = 20
+NUM_SIMULATIONS = 10_000
 
 # PROBABLITY = 0.5
 
 def run_simulation(k):
     counter = 0
     for _ in range(NUM_SIMULATIONS):
-        chosen_candidate = simulate_secretary_problem(CANDIDATE_POOL_SIZE, k)
+        chosen_candidate = simulate_going_back(CANDIDATE_POOL_SIZE, k)
         if chosen_candidate == 1:
             counter += 1
     return counter
@@ -24,4 +24,4 @@ if __name__ == "__main__":
     outcomes = [count / NUM_SIMULATIONS for count in results]
     optimal_k = np.argmax(outcomes)
 
-    graph(outcomes, optimal_k, going_back=True, savefig=True, filename=f"output.png")
+    graph(outcomes, optimal_k, savefig=True, filename=f"output.png")
