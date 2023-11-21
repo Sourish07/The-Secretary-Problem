@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
 def simulate_secretary_problem(n, k):
     '''
@@ -11,7 +10,11 @@ def simulate_secretary_problem(n, k):
 
     best_seen = np.min(rankings[:k]) if k > 0 else float('inf')
 
-    return rankings[np.argmax(rankings[k:] < best_seen) + k]
+    acceptable_candidates = rankings[k:] < best_seen
+    if np.any(acceptable_candidates):
+        # argmax returns the first occurence of the max value, which in this case is 1 because of the boolean array
+        return rankings[np.argmax(acceptable_candidates) + k]
+    return rankings[-1]
 
 
 def simulate_rejection(n, k, p=0.5):
@@ -24,9 +27,14 @@ def simulate_rejection(n, k, p=0.5):
     np.random.shuffle(rankings)
 
     best_seen = np.min(rankings[:k]) if k > 0 else float('inf')
-    rankings[k:] += np.where(np.random.rand(n - k) < p, n + 1, 0)
+    # Setting the ranks of the candidates that reject you to NaN,
+    # valid_candidates are those that didn't reject you
+    valid_candidates = rankings[k:] * np.where(np.random.rand(n - k) < p, np.nan, 1)
 
-    return rankings[np.argmax(rankings[k:] < best_seen) + k]
+    acceptable_candidates = valid_candidates < best_seen
+    if np.any(acceptable_candidates):
+        return rankings[np.argmax(acceptable_candidates) + k]
+    return rankings[-1]
         
 
 def simulate_going_back(n, k, p=0.5):
@@ -39,12 +47,12 @@ def simulate_going_back(n, k, p=0.5):
     rankings = np.arange(1, n + 1)
     np.random.shuffle(rankings)
 
-    best_seens = sorted(rankings[:k])
+    best_seens = np.sort(rankings[:k])
     best_seen = best_seens[0] if k > 0 else float('inf')
     
-    leap = rankings[np.argmax(rankings[k:] < best_seen) + k]
-    if leap < best_seen:
-        return leap
+    acceptable_candidates = rankings[k:] < best_seen
+    if np.any(acceptable_candidates):
+        return rankings[np.argmax(acceptable_candidates) + k]
         
     for go_back in range(k):
         # if rejcted, continue to next candidate
@@ -52,21 +60,6 @@ def simulate_going_back(n, k, p=0.5):
             continue
         return best_seens[go_back]
 
-    return best_seens[-1]
-
-
-if __name__ == "__main__":
-    CANDIDATE_POOL_SIZE = 100
-    NUM_SIMULATIONS = 1000
-
-    outcomes = []
-    for ltl_threshold in range(CANDIDATE_POOL_SIZE): # look then leap threshold
-        best_apt_count = 0
-        for _ in range(NUM_SIMULATIONS):
-            chosen_apt = simulate_going_back(CANDIDATE_POOL_SIZE, ltl_threshold)
-            if chosen_apt == 1:
-                best_apt_count += 1
-        outcomes.append(best_apt_count / NUM_SIMULATIONS)
-
-    plt.plot(outcomes)
-    plt.show()
+    # Multiply by 1 if not rejected, otherwise make it NaN
+    valid_candidates = best_seens * np.where(np.random.rand(k) < p, np.nan, 1)
+    return np.min(valid_candidates) # Can do this because we'd be asking the candidates in order
